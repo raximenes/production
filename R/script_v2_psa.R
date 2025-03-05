@@ -3,7 +3,7 @@
 # --------------------------------------------------------
 
 # 1) Load necessary scripts (ensure that file paths are correct)
-source("00_global_setup.R")
+source("R/00_global_setup.R")
 source("R/01_parameters_v2.R")
 source("R/02_transition_array_v2.R")
 source("R/03_markov_model_v2.R")
