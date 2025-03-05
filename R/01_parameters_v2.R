@@ -181,9 +181,9 @@ get_basecase_params <- function(scenario_name = "Scenario A") {
       ve_all <- calculate_all_ve_shifted(ve_data, max_year = 10, n_cycles = n_cycles, shift = vt)
     }
     ve_MenABCWY_forACWY <- ve_all[ve_all$Vaccine == "MenABCWY_for_SeroACWY", "Effectiveness"] * coverage
-    ve_MenABCWY_forB    <- ve_all[ve_all$Vaccine == "MenABCWY_for_SeroB",    "Effectiveness"] * coverage
+    ve_MenABCWY_forB    <- ve_all[ve_all$Vaccine == "MenABCWY_for_SeroB",    "Effectiveness"] * coverage 
     ve_MenACWY          <- ve_all[ve_all$Vaccine == "MenACWY",               "Effectiveness"] * coverage
-    ve_MenC             <- ve_all[ve_all$Vaccine == "MenC",                  "Effectiveness"] * coverage
+    ve_MenC             <- ve_all[ve_all$Vaccine == "MenC",                  "Effectiveness"] * coverage 
   } else {
     ve_MenABCWY_forACWY <- calculate_boosted_ve(
       base_ve = ve_data$effectiveness[ve_data$vaccine == "MenABCWY_for_SeroACWY"],
@@ -405,23 +405,23 @@ sd_values <- get_basecase_sd_values()
 #----------------------------------------------------------------------------
 # 1) Define scenarios
 #----------------------------------------------------------------------------
-define_scenarios <- function() {
-  scenarios <- list(
-    "Scenario A" = list(
-      vaccination_time = 0,    # Vacinação no ciclo 0
-      doses = 1                # Single dose
-    ),
-    "Scenario B" = list(
-      vaccination_time = 12,   # Vacinação no ciclo 12
-      doses = 1                # Single dose
-    ),
-    "Scenario C" = list(
-      vaccination_time = c(0, 12),  # Vacinação nos ciclos 0 e 12
-      doses = c(2, 1)               # Duas doses inicialmente; uma dose de reforço no ciclo 12
-    )
-  )
-  return(scenarios)
-}
+# define_scenarios <- function() {
+#   scenarios <- list(
+#     "Scenario A" = list(
+#       vaccination_time = 0,    # Vacinação no ciclo 0
+#       doses = 1                # Single dose
+#     ),
+#     "Scenario B" = list(
+#       vaccination_time = 12,   # Vacinação no ciclo 12
+#       doses = 1                # Single dose
+#     ),
+#     "Scenario C" = list(
+#       vaccination_time = c(0, 12),  # Vacinação nos ciclos 0 e 12
+#       doses = c(2, 1)               # Duas doses inicialmente; uma dose de reforço no ciclo 12
+#     )
+#   )
+#   return(scenarios)
+# }
 
 #----------------------------------------------------------------------------
 # 2) Generate PSA samples for a specific scenario
