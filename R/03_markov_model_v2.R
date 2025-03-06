@@ -123,19 +123,22 @@ make_utility_vector <- function(params) {
 }
 
 # 3) Compute total discounted cost and QALYs.
+# Modified compute_costs_and_qalys() function
 compute_costs_and_qalys <- function(m_trace, params, strategy) {
   n_cycles <- params$n_cycles
   
-  m_cost <- make_cost_matrix(params, strategy)
+  # Get cost matrix and utility vector
+  m_cost <- make_cost_matrix(params, strategy)  # Cost matrix WITHOUT vaccine cost adjustments
   v_util <- make_utility_vector(params)
   
-  v_dwc <- 1 / ((1 + params$d_c)^(0:n_cycles))  # cost discount factors
+  # Discount factors for cost and QALYs
+  v_dwc <- 1 / ((1 + params$d_c)^(0:n_cycles))  # Cost discount factors
   v_dwe <- 1 / ((1 + params$d_e)^(0:n_cycles))  # QALY discount factors
   
-  # Weighted cycle correction factor (using Simpson's 1/3 method if available)
+  # Weighted cycle correction factors (e.g., using Simpson's 1/3 method)
   v_wcc <- gen_wcc(n_cycles, method = "Simpson1/3")
-  # Alternatively, for simplicity: v_wcc <- rep(1, n_cycles + 1)
   
+  # Calculate costs and QALYs per cycle from the state trace and cost/utility matrices
   cycle_costs <- numeric(n_cycles + 1)
   cycle_qalys <- numeric(n_cycles + 1)
   
@@ -144,6 +147,36 @@ compute_costs_and_qalys <- function(m_trace, params, strategy) {
     cycle_qalys[t] <- sum(m_trace[t, ] * v_util)
   }
   
+  # ----- NEW: Compute vaccination cost as an independent cost stream -----
+  # Create a vector to hold vaccination cost per cycle. This cost is incurred
+  # at the exact cycles where vaccination occurs, regardless of the state distribution.
+  v_vacc_cost <- numeric(n_cycles + 1)
+  
+  # For each vaccination event (could be one or more events, as in Scenario C)
+  vacc_times <- params$vaccination_time  # e.g., c(0, 12)
+  vacc_doses <- params$doses             # e.g., c(2, 1)
+  
+  # Loop over each vaccination event and add its cost in the corresponding cycle.
+  # The cost for each event is: coverage * (vaccine_cost + admin_cost) * number_of_doses
+  for (i in seq_along(vacc_times)) {
+    cycle_index <- vacc_times[i] + 1  # Adjust for R's 1-indexing (cycle 0 becomes row 1)
+    
+    if(strategy == "MenABCWY"){
+      v_vacc_cost[cycle_index] <- v_vacc_cost[cycle_index] + 
+        params$coverage * (params$c_MenABCWY + params$c_admin) * vacc_doses[i]
+    } else if(strategy == "MenACWY"){
+      v_vacc_cost[cycle_index] <- v_vacc_cost[cycle_index] + 
+        params$coverage * (params$c_MenACWY + params$c_admin) * vacc_doses[i]
+    } else if(strategy == "MenC"){
+      v_vacc_cost[cycle_index] <- v_vacc_cost[cycle_index] + 
+        params$coverage * (params$c_MenC + params$c_admin) * vacc_doses[i]
+    }
+  }
+  
+  # Add the vaccination cost stream to the cycle costs
+  cycle_costs <- cycle_costs + v_vacc_cost
+  
+  # Discount and sum the cycle costs and QALYs
   discounted_costs <- cycle_costs * v_dwc * v_wcc
   discounted_qalys <- cycle_qalys * v_dwe * v_wcc
   
@@ -152,4 +185,5 @@ compute_costs_and_qalys <- function(m_trace, params, strategy) {
   
   return(list(cost = total_cost, qalys = total_qalys))
 }
+
 ################################################################################

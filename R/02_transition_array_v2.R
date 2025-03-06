@@ -81,22 +81,50 @@ build_transition_array <- function(params, strategy) {
   )
   
   # Helper: get infection prob depending on strategy
-  get_infection_prob <- function(t, group) {
-    # This logic matches your original approach:
+  # get_infection_prob <- function(t, group) {
+  #   # This logic matches your original approach:
+  #   if (strategy == "MenABCWY") {
+  #     if (group == "B") {
+  #       return(params$p_B[t] * (1 - params$ve_MenABCWY_forB[t]))
+  #     } else {
+  #       # For serogroups C, W, Y => uses ve_MenABCWY_forACWY
+  #       return(params[[paste0("p_", group)]][t] * (1 - params$ve_MenABCWY_forACWY[t]))
+  #     }
+  #   } else if (strategy == "MenACWY") {
+  #     if (group == "B") {
+  #       return(params$p_B[t])
+  #     } else {
+  #       return(params[[paste0("p_", group)]][t] *
+  #                (1 - params$ve_MenACWY[t]))
+  #     }
+  #   } else if (strategy == "MenC") {
+  #     if (group == "B") {
+  #       return(params$p_B[t])
+  #     } else if (group == "C") {
+  #       return(params$p_C[t] * (1 - params$ve_MenC[t]))
+  #     } else if (group == "W") {
+  #       return(params$p_W[t])
+  #     } else {
+  #       return(params$p_Y[t])
+  #     }
+  #   } else {
+  #     stop("Unknown strategy. Must be one of MenABCWY, MenACWY, MenC.")
+  #   }
+  # }
+  get_infection_prob <- function(t, group, strategy, params) {
     if (strategy == "MenABCWY") {
       if (group == "B") {
-        return(params$p_B[t] * (1 - params$ve_MenABCWY_forB[t]))
+        # If ve_MenABCWY_forB is not defined, you can default it (e.g., to 0)
+        ve_val <- if (!is.null(params$ve_MenABCWY_forB)) params$ve_MenABCWY_forB[t] else 0
+        return(params$p_B[t] * (1 - ve_val))
       } else {
-        # For serogroups C, W, Y => uses ve_MenABCWY_forACWY
-        return(params[[paste0("p_", group)]][t] *
-                 (1 - params$ve_MenABCWY_forACWY[t]))
+        return(params[[paste0("p_", group)]][t] * (1 - params$ve_MenABCWY_forACWY[t]))
       }
     } else if (strategy == "MenACWY") {
       if (group == "B") {
         return(params$p_B[t])
       } else {
-        return(params[[paste0("p_", group)]][t] *
-                 (1 - params$ve_MenACWY[t]))
+        return(params[[paste0("p_", group)]][t] * (1 - params$ve_MenACWY[t]))
       }
     } else if (strategy == "MenC") {
       if (group == "B") {
@@ -116,10 +144,10 @@ build_transition_array <- function(params, strategy) {
   # Fill transitions
   for (t in 1:n_cycles) {
     bgm <- p_bg_mort[t]
-    pB  <- get_infection_prob(t, "B")
-    pC  <- get_infection_prob(t, "C")
-    pW  <- get_infection_prob(t, "W")
-    pY  <- get_infection_prob(t, "Y")
+    pB  <- get_infection_prob(t, "B", strategy, params)
+    pC  <- get_infection_prob(t, "C", strategy, params)
+    pW  <- get_infection_prob(t, "W", strategy, params)
+    pY  <- get_infection_prob(t, "Y", strategy, params)
     total_inf <- pB + pC + pW + pY
     
     # FROM Healthy
