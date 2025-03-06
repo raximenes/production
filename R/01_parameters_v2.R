@@ -79,17 +79,28 @@ define_scenarios <- function() {
     "Scenario A" = list(
       vaccination_time = 12,    # Vaccination at cycle 12
       doses = 1,                # Single dose
-      n_cycles = 89
+      n_cycles = 89,
+      allowed_vaccines = c("MenABCWY_for_SeroACWY", "MenACWY")
     ),
     "Scenario B" = list(
       vaccination_time = 0,   # Vaccination at cycle 0
       doses = 2,                # Double dose
-      n_cycles = 100
+      n_cycles = 100,
+      allowed_vaccines = c("MenACWY", "MenC")
     ),
     "Scenario C" = list(
       vaccination_time = c(0,12),  # Vaccination at cycles 0 and 12
       doses = c(2,1),               # Two doses initially; one booster at cycle 12
-      n_cycles = 100
+      n_cycles = 100,
+      allowed_vaccines_init = c("MenACWY", "MenC"),       # 
+      allowed_vaccines_boost = c("MenABCWY_for_SeroACWY")  # 
+    ),
+    "Scenario D" = list(
+      vaccination_time = c(0,12),  # Vaccination at cycles 0 and 12
+      doses = c(2,1),               # Two doses initially; one booster at cycle 12
+      n_cycles = 100,
+      allowed_vaccines_init = c("MenACWY", "MenC"),       # 
+      allowed_vaccines_boost = c("MenACWY")  # 
     )
   )
   return(scenarios)
@@ -186,7 +197,7 @@ get_basecase_params <- function(scenario_name = "Scenario A") {
     ve_MenC             <- ve_all[ve_all$Vaccine == "MenC",                  "Effectiveness"] * coverage 
   } else {
     ve_MenABCWY_forACWY <- calculate_boosted_ve(
-      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenABCWY_for_SeroACWY"],
+      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenABCWY_for_SeroACWY"] * coverage,
       vac_times = scenario_params$vaccination_time,
       doses = scenario_params$doses,
       max_year = 10,
@@ -194,7 +205,7 @@ get_basecase_params <- function(scenario_name = "Scenario A") {
       coverage = coverage
     )
     ve_MenABCWY_forB <- calculate_boosted_ve(
-      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenABCWY_for_SeroB"],
+      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenABCWY_for_SeroB"] * coverage,
       vac_times = scenario_params$vaccination_time,
       doses = scenario_params$doses,
       max_year = 10,
@@ -202,7 +213,7 @@ get_basecase_params <- function(scenario_name = "Scenario A") {
       coverage = coverage
     )
     ve_MenACWY <- calculate_boosted_ve(
-      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenACWY"],
+      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenACWY"] * coverage,
       vac_times = scenario_params$vaccination_time,
       doses = scenario_params$doses,
       max_year = 10,
@@ -210,7 +221,7 @@ get_basecase_params <- function(scenario_name = "Scenario A") {
       coverage = coverage
     )
     ve_MenC <- calculate_boosted_ve(
-      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenC"],
+      base_ve = ve_data$effectiveness[ve_data$vaccine == "MenC"] * coverage,
       vac_times = scenario_params$vaccination_time,
       doses = scenario_params$doses,
       max_year = 10,
